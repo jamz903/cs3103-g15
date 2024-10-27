@@ -26,8 +26,7 @@ for mac:
 ![alt text](CS3103Assignment4.png)
 
 ## Current Progess
-[x] Sending over textual data
-[x] Established page with prof side, able to see data from student to prof page
-
-[ ] Need to send over actual audio data
-[ ] Need to get the students name at the start of loading the client
+- [x] Sending over textual data
+- [x] Established page with prof side, able to see data from student to prof page
+- [ ] Need to send over actual audio data
+- [ ] Need to get the students name at the start of loading the client
