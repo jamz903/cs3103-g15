@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Audio Chat (Prof side)</title>
+    </head>
+    <style>
+        #recording-indicator {
+                display: none;
+                color: red;
+                font-weight: bold;
+                margin-top: 10px;
+            }
+    </style>
+    <body>
+        <h1>WebSocket Audio Chat (Prof Side)</h1>
+        <h2 id = "speaker-status">Current speaker: </h2>
+
+        <script>
+            // var ws = new WebSocket(`ws://localhost:8000/ws/${client_id}`);
+            var ws = new WebSocket(`ws://localhost:8000/ws/prof`);
+            ws.binaryType = 'arraybuffer';  // To handle binary audio data
+            ws.onmessage = function(event) {
+                var speakerStatus = document.getElementById('speaker-status');
+                speakerStatus.textContent = event.data; // Update with speaker ID or status
+            };
+        </script>
+    </body>
+
+</html>

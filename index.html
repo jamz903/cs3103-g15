@@ -56,7 +56,7 @@
                                     if (event.data.size > 0) {
                                         // Send audio data chunk as binary over WebSocket
                                         console.log("Sending audio chunk");
-                                        ws.send(event.data);
+                                        ws.send(JSON.stringify({ action: "message", content: "Audio chunk available" }));
                                     }
                                 };
                             })
