@@ -49,15 +49,13 @@
                             .then(function(mediaStream) {
                                 stream = mediaStream;  // Save the stream so it can be stopped later
                                 mediaRecorder = new MediaRecorder(mediaStream);
-                                mediaRecorder.start();
+                                mediaRecorder.start(1000);
                                 recordingIndicator.style.display = "inline"; 
 
                                 mediaRecorder.ondataavailable = function(event) {
                                     if (event.data.size > 0) {
-                                        event.data.arrayBuffer().then(arrayBuffer => {
-                                            ws.send(arrayBuffer);
-                                            console.log("Audio sent");
-                                        })
+                                        ws.send(event.data);  // Send Blob directly
+                                        console.log("Audio chunk sent:", event.data);
                                     }
                                 };
                             })
