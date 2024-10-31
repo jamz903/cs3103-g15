@@ -4,6 +4,8 @@ from fastapi.responses import FileResponse
 import pyaudio
 import websockets
 import asyncio
+import io
+import wave
 
 
 app = FastAPI()
@@ -76,6 +78,10 @@ async def receive_audio(websocket: WebSocket):
     if "bytes" in data :
         audio_bytes = data["bytes"]
         print(f"audio_bytes is {audio_bytes}")
+        with wave.open(io.BytesIO(audio_bytes), "rb") as wav:
+            pcm_data = wav.readframes(wav.getnframes())
+        if pcm_data:
+            stream.write(pcm_data)
         return audio_bytes
     else:
         print(f"audio_bytes is not bytes")
