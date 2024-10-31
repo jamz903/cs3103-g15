@@ -48,7 +48,7 @@
                         navigator.mediaDevices.getUserMedia({ audio: true })
                             .then(function(mediaStream) {
                                 stream = mediaStream;  // Save the stream so it can be stopped later
-                                mediaRecorder = new MediaRecorder(mediaStream);
+                                mediaRecorder = new MediaRecorder(mediaStream, { mimeType: 'audio/wav' });
                                 mediaRecorder.start(1000);
                                 recordingIndicator.style.display = "inline"; 
 
