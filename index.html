@@ -54,8 +54,10 @@
 
                                 mediaRecorder.ondataavailable = function(event) {
                                     if (event.data.size > 0) {
-                                        ws.send(event.data);  // Send Blob directly
-                                        console.log("Audio chunk sent:", event.data);
+                                        event.data.arrayBuffer().then(arrayBuffer => {
+                                            ws.send(arrayBuffer);
+                                            console.log("Audio sent");
+                                        });
                                     }
                                 };
                             })
