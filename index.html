@@ -54,9 +54,10 @@
 
                                 mediaRecorder.ondataavailable = function(event) {
                                     if (event.data.size > 0) {
-                                        // Send audio data chunk as binary over WebSocket
-                                        console.log("Sending audio chunk");
-                                        ws.send(JSON.stringify({ action: "message", content: "Audio chunk available" }));
+                                        event.data.arrayBuffer().then(arrayBuffer => {
+                                            ws.send(arrayBuffer);
+                                            console.log("Audio sent");
+                                        })
                                     }
                                 };
                             })

@@ -83,10 +83,11 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
                     if await manager.start_speaking(websocket):
                         await websocket.send_json({"action": "start"})
                         
+                        audio_bytes = await websocket.receive_bytes()
                         ### send over the information to the prof_websocket
                         if manager.prof_websocket:
                             print(f"Student {client_id} is speaking")
-                            await manager.prof_websocket.send_text(f"Student {client_id} is speaking")
+                            await manager.prof_websocket.send_bytes(audio_bytes)
                     else:
                         await websocket.send_json({"action": "deny"})
 
