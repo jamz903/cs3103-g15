@@ -1,8 +1,16 @@
 from typing import List
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
+import pyaudio
+import websockets
+import asyncio
+
 
 app = FastAPI()
+
+# Initialize PyAudio for real-time audio playback
+p = pyaudio.PyAudio()
+stream = p.open(format=pyaudio.paInt16, channels=1, rate=16000, output=True)
 
 class ConnectionManager:
     def __init__(self):
@@ -76,7 +84,9 @@ async def receive_audio(websocket: WebSocket):
 async def forward_audio(websocket: WebSocket, audio_bytes):
     if manager.prof_websocket:
         await manager.prof_websocket.send_bytes(audio_bytes)
-
+    # Send the audio bytes to the professor's WebSocke
+    if audio_bytes:
+        stream.write(audio_bytes)
 
 
 
@@ -99,7 +109,8 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
             while True:
                 # Keep the connection open for the professor
                 print("Professor WebSocket connected")
-                await websocket.receive_text()  
+                await websocket.receive_bytes()
+                 
         except WebSocketDisconnect:
             await manager.disconnect_prof()
             print("Professor WebSocket disconnected")
@@ -115,6 +126,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
             await send_start(websocket) 
             while True:
                 audio_bytes = await receive_audio(websocket)
+                print("received bytes, forwarding to prof")
                 if audio_bytes:
                     await forward_audio(websocket, audio_bytes)
                 else:
@@ -126,47 +138,6 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
             # send_deny()
             print("received stop")
         
-        # try:
-            # connection_established = False
-        #     while True:
-        #         print(f"Active student connections: {manager.active_connections}")
-        #         data = None
-        #         if not connection_established:
-        #             data = await websocket.receive_json()
-                
-        #             connection_established = True
-
-        #         action = data.get("action")
-                
-        #         print(f"data is {data}")
-
-        #         if action == "start":
-        #             # Check if the current user can start speaking
-        #             if await manager.start_speaking(websocket):
-                        
-        #                 await websocket.send_json({"action": "start"})
-                        
-        #                 while True:
-        #                     print("After server sends start")
-                            
-        #                     audio_bytes = await websocket.receive_bytes()
-        #                     print(f"audio_bytes is {audio_bytes}")
-        #                     ### send over the information to the prof_websocket
-        #                     if manager.prof_websocket:
-        #                         print(f"Student {client_id} is speaking")
-        #                         await manager.prof_websocket.send_bytes(audio_bytes)
-        #             else:
-        #                 await websocket.send_json({"action": "deny"})
-
-        #         elif action == "stop":
-        #             await manager.stop_speaking(websocket)
-        #             if manager.prof_websocket:
-        #                 await manager.prof_websocket.send_text(f"Student {client_id} stopped speaking")
-
-        # except WebSocketDisconnect:
-        #     manager.disconnect(websocket)
-        #     await manager.broadcast(f"Student #{client_id} disconnected")
-
 # @app.websocket("/ws/prof")
 # async def websocket_prof_endpoint(websocket: WebSocket):
 #     await manager.connect_prof(websocket)

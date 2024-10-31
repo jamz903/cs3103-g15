@@ -27,11 +27,22 @@
             }
             var ws = new WebSocket(`ws://localhost:8000/ws/prof`);
             ws.binaryType = 'arraybuffer';  // To handle binary audio data
+            
             ws.onmessage = async (event) => {
                 if (event.data instanceof ArrayBuffer) {
                     // Decode and play the audio data
-                    const audioBuffer = await audioContext.decodeAudioData(event.data);
-                    playAudioBuffer(audioBuffer);
+                    console.log("Audio chunk received:", event.data);
+                    if (event.data.byteLength > 0) {
+                        try {
+                            const audioBuffer = await audioContext.decodeAudioData(event.data);
+                            if (audioBuffer){
+                                playAudioBuffer(audioBuffer);
+                            }
+                        } catch (error) {
+                            console.log(error)
+                        }
+
+                    }
                 } else {
                     const message = JSON.parse(event.data);
                     if (message.action === "stop") {

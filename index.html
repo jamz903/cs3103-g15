@@ -61,6 +61,11 @@
                             })
                             .catch(function(error) {
                                 console.error('Error accessing microphone:', error);
+                                // Fallback: Use Audio element if decodeAudioData fails
+                                const blob = new Blob([event.data], { type: 'audio/webm;codecs=opus' });  // Adjust MIME type as needed
+                                const url = URL.createObjectURL(blob);
+                                const audio = new Audio(url);
+                                audio.play();
                             });
                     } else if (response.action === "deny") {
                         alert("Someone else is speaking. Wait for your turn.");
