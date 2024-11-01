@@ -81,33 +81,6 @@ async def send_deny(websocket: WebSocket):
     await websocket.send_json({"action": "deny"})
 
 
-async def receive_audio(websocket: WebSocket):
-    data = await websocket.receive()
-    
-    if "bytes" in data:
-        # Process binary audio data
-        audio_bytes = data["bytes"]
-        print(f"Received audio_bytes of length {len(audio_bytes)}")
-        return audio_bytes
-    elif "text" in data:
-        # Skip JSON messages
-        json_message = data["text"]
-        print(f"Received JSON message: {json_message}")
-        return None
-    else:
-        print("Unknown data format received.")
-        return None
-
-
-async def save_audio_to_file(audio_data, filename="output.wav"):
-    try:
-        audio_segment = AudioSegment.from_file(io.BytesIO(audio_data), format="webm", codec="opus")
-        audio_segment.export(filename, format="wav")  # Save as WAV
-        print(f"Audio file saved as {filename}")
-    except Exception as e:
-        print(f"Error decoding or saving audio: {e}")
-
-
 manager = ConnectionManager()
 
 @app.get("/")
