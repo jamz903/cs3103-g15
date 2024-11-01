@@ -23,8 +23,8 @@
     <script>
         var client_id = Math.floor(Math.random() * 100)
         document.querySelector("#ws-id").textContent = client_id;
-        var ws ;
-        
+        var ws;
+
 
         var mediaRecorder;
         var audioChunks = [];
@@ -37,6 +37,11 @@
             await new Promise(r => setTimeout(r, 200));
 
             ws.onmessage = function (event) {
+                // if (event.AudioContext)
+                console.log(event)
+                if (event.data == "{\"action\":\"deny\"}") {
+                    alert("Someone else is speaking. Wait for your turn.");
+                }
                 var messages = document.getElementById('messages')
                 var message = document.createElement('li')
                 var content = document.createTextNode(event.data)
@@ -47,6 +52,7 @@
             // Request permission to speak by sending a "start" message
             ws.send(JSON.stringify({ action: "start" }));
             console.log("ws is sent")
+
 
             // Check if permission was granted (server responds with "start" or "deny")
             ws.onmessage = function (event) {
@@ -74,14 +80,14 @@
                         };
                     });
 
-                } else if (response.action === "deny") {
+                } else {
                     alert("Someone else is speaking. Wait for your turn.");
                 }
             };
         }
 
         async function stopRecording() {
-            
+
             console.log("stopRecording");
             if (mediaRecorder && mediaRecorder.state !== "inactive") {
                 mediaRecorder.stop();  // Stop the MediaRecorder

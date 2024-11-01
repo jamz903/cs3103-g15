@@ -5,6 +5,7 @@ import io
 from pydub import AudioSegment
 import pyaudio
 import json
+from time import sleep
 
 app = FastAPI()
 
@@ -16,7 +17,22 @@ class ConnectionManager:
     async def connect(self, websocket: WebSocket):
         print("Server has connected to a student WebSocket")
         await websocket.accept()
-        self.active_connections.append(websocket)
+        
+        
+        if self.current_speaker is None:
+            self.current_speaker = websocket
+            return True
+            # await websocket.send_text("You are the current speaker")
+            # self.active_connections.append(websocket)
+        else:
+            sleep(1)
+            print("Another student is currently speaking")
+            await websocket.send_json({"action": "deny"})
+            websocket.close()
+            return False
+            
+        
+        
 
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
@@ -102,7 +118,12 @@ async def get_index():
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: str):
     print(f"In WebSocket for client {client_id}")
-    await manager.connect(websocket)
+    check = await manager.connect(websocket)
+    print("check if connected", check)
+    if not check:
+        print("Connection denied")
+        return
+    
     
     action = await receive_action(websocket)
     
@@ -114,6 +135,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
         if action == "start":
             await send_start(websocket)
             while True:
+                print(f"Currently speaking: {client_id}")
                 audio_bytes = await websocket.receive_bytes()
                 if audio_bytes:
                     stream.write(audio_bytes)  # Play the received audio in real-time
