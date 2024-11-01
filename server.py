@@ -4,6 +4,7 @@ from fastapi.responses import FileResponse
 import io
 from pydub import AudioSegment
 import pyaudio
+import json
 
 app = FastAPI()
 
@@ -41,9 +42,20 @@ class ConnectionManager:
 
 
 async def receive_action(websocket: WebSocket):
-    data = await websocket.receive_json()
-    action = data.get("action")
-    return action
+    recv = await websocket.receive()
+    while "text" not in recv:
+        print("Trying again")
+        recv = await websocket.receive()
+    print(recv)
+    # data = await websocket.receive()
+    # data = await websocket.receive()
+    if "text" in recv:
+        data = json.loads(recv["text"])
+        print(data)
+        
+        action = data["action"]
+        print(f"Received action: {action}")
+        return action
 
 
 async def send_start(websocket: WebSocket):
@@ -89,42 +101,35 @@ async def get_index():
 
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: str):
-    # Connect student
+    print(f"In WebSocket for client {client_id}")
     await manager.connect(websocket)
     
     action = await receive_action(websocket)
-    # pd = AudioSegment.from_file("output.wav")
     
-    # encoding	pcm_s16le
-    # format	s16
-    # number_of_channel	1 ch (mono)
-    # sample_rate	48,000 Hz
-    # file_size	478,124 bytes
-    # duration	5 s
+    # Set up PyAudio for real-time playback
     p = pyaudio.PyAudio()
-    chunk = 1024
-    # print(pd.frame_rate)
-    # print(pd.sample_width)
-    # print(pd.channels)
-    stream = p.open(format =
-                        p.get_format_from_width(2),
-                        channels = 1,
-                        rate = 48000,
-                        output = True)
+    stream = p.open(format=pyaudio.paInt16, channels=1, rate=48000, output=True)
 
+    try:
+        if action == "start":
+            await send_start(websocket)
+            while True:
+                audio_bytes = await websocket.receive_bytes()
+                if audio_bytes:
+                    stream.write(audio_bytes)  # Play the received audio in real-time
+                else:
+                    break
+        elif action == "stop":
+            print("Received stop action")
 
-    if action == "start":
-        await send_start(websocket)
-        # audio_buffer = io.BytesIO()  # Use BytesIO to collect audio data in memory
-        while True:
-            audio_bytes = await receive_audio(websocket)
-            if audio_bytes:
-                # audio_buffer.write(audio_bytes)  # Write each chunk to buffer
-                # AudioSegment
-                stream.write(audio_bytes)
-            else:
-                break
-        
-        
-    elif action == "stop":
-        print("received stop")
+    except WebSocketDisconnect:
+        print(f"Client {client_id} disconnected unexpectedly")
+    
+    finally:
+        # Cleanup resources
+        stream.stop_stream()
+        stream.close()
+        p.terminate()
+        await manager.stop_speaking(websocket)
+        manager.disconnect(websocket)
+        print("Connection closed and resources released")

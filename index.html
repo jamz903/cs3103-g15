@@ -23,29 +23,35 @@
     <script>
         var client_id = Math.floor(Math.random() * 100)
         document.querySelector("#ws-id").textContent = client_id;
-        var ws = new WebSocket(`ws://localhost:8000/ws/${client_id}`);
-        ws.binaryType = 'arraybuffer';  // To handle binary audio data
-
-        ws.onmessage = function (event) {
-            var messages = document.getElementById('messages')
-            var message = document.createElement('li')
-            var content = document.createTextNode(event.data)
-            message.appendChild(content)
-            messages.appendChild(message)
-        };
+        var ws ;
+        
 
         var mediaRecorder;
         var audioChunks = [];
         var stream;
         var recordingIndicator = document.getElementById("recording-indicator");
 
-        function startRecording() {
+        async function startRecording() {
+            ws = new WebSocket(`ws://localhost:8000/ws/${client_id}`);
+            ws.binaryType = 'arraybuffer';  // To handle binary audio data
+            await new Promise(r => setTimeout(r, 200));
+
+            ws.onmessage = function (event) {
+                var messages = document.getElementById('messages')
+                var message = document.createElement('li')
+                var content = document.createTextNode(event.data)
+                message.appendChild(content)
+                messages.appendChild(message)
+            };
+            console.log("startRecording");
             // Request permission to speak by sending a "start" message
             ws.send(JSON.stringify({ action: "start" }));
+            console.log("ws is sent")
 
             // Check if permission was granted (server responds with "start" or "deny")
             ws.onmessage = function (event) {
                 var response = JSON.parse(event.data);
+                console.log(response)
                 if (response.action === "start") {
                     const audioContext = new AudioContext();
                     navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
@@ -62,8 +68,9 @@
                             for (let i = 0; i < inputData.length; i++) {
                                 pcmData[i] = inputData[i] * 32767;
                             }
-
-                            ws.send(pcmData.buffer); // Send raw pcm data over websocket
+                            if (ws.readyState == 1) {
+                                ws.send(pcmData.buffer); // Send raw pcm data over websocket
+                            }
                         };
                     });
 
@@ -73,7 +80,9 @@
             };
         }
 
-        function stopRecording() {
+        async function stopRecording() {
+            
+            console.log("stopRecording");
             if (mediaRecorder && mediaRecorder.state !== "inactive") {
                 mediaRecorder.stop();  // Stop the MediaRecorder
             }
@@ -82,9 +91,12 @@
                 stream.getTracks().forEach(track => track.stop());  // Stop the audio stream
             }
 
-            ws.send(JSON.stringify({ action: "stop" }));
+            // ws.send(JSON.stringify({ action: "stop" }));
+            // await waitForWebSocketFlush();
+            ws.close()
             recordingIndicator.style.display = "none";
         }
+
     </script>
 </body>
 
