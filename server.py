@@ -1,22 +1,16 @@
 from typing import List
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
+import io
+from pydub import AudioSegment
 import pyaudio
-import websockets
-import asyncio
-
 
 app = FastAPI()
-
-# Initialize PyAudio for real-time audio playback
-p = pyaudio.PyAudio()
-stream = p.open(format=pyaudio.paInt16, channels=1, rate=16000, output=True)
 
 class ConnectionManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []
         self.current_speaker = None  # Track the current speaker
-        self.prof_websocket = None  # Track the professor's WebSocket connection
 
     async def connect(self, websocket: WebSocket):
         print("Server has connected to a student WebSocket")
@@ -27,15 +21,6 @@ class ConnectionManager:
         self.active_connections.remove(websocket)
         if websocket == self.current_speaker:
             self.current_speaker = None  # Clear the speaker if they disconnect
-
-    async def connect_prof(self, websocket: WebSocket):
-        print("Server has connected to the professor WebSocket")
-        await websocket.accept()
-        self.prof_websocket = websocket  # Assign the WebSocket connection for the professor
-
-    async def disconnect_prof(self):
-        print("Professor WebSocket disconnected")
-        self.prof_websocket = None
 
     async def start_speaking(self, websocket: WebSocket):
         if self.current_speaker is None:
@@ -67,27 +52,33 @@ async def send_start(websocket: WebSocket):
 
 async def send_deny(websocket: WebSocket):
     await websocket.send_json({"action": "deny"})
-        
-async def receive_audio(websocket: WebSocket):
 
+
+async def receive_audio(websocket: WebSocket):
     data = await websocket.receive()
-    print(f"audio_bytes is {data}")
     
-    if "bytes" in data :
+    if "bytes" in data:
+        # Process binary audio data
         audio_bytes = data["bytes"]
-        print(f"audio_bytes is {audio_bytes}")
+        print(f"Received audio_bytes of length {len(audio_bytes)}")
         return audio_bytes
+    elif "text" in data:
+        # Skip JSON messages
+        json_message = data["text"]
+        print(f"Received JSON message: {json_message}")
+        return None
     else:
-        print(f"audio_bytes is not bytes")
+        print("Unknown data format received.")
         return None
 
-async def forward_audio(websocket: WebSocket, audio_bytes):
-    if manager.prof_websocket:
-        await manager.prof_websocket.send_bytes(audio_bytes)
-    # Send the audio bytes to the professor's WebSocke
-    if audio_bytes:
-        stream.write(audio_bytes)
 
+async def save_audio_to_file(audio_data, filename="output.wav"):
+    try:
+        audio_segment = AudioSegment.from_file(io.BytesIO(audio_data), format="webm", codec="opus")
+        audio_segment.export(filename, format="wav")  # Save as WAV
+        print(f"Audio file saved as {filename}")
+    except Exception as e:
+        print(f"Error decoding or saving audio: {e}")
 
 
 manager = ConnectionManager()
@@ -96,55 +87,44 @@ manager = ConnectionManager()
 async def get_index():
     return FileResponse("index.html")
 
-@app.get("/prof")
-async def get_prof():
-    return FileResponse("prof.html")
-
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: str):
-    # connecting prof
-    if client_id == "prof":
-        await manager.connect_prof(websocket)
-        try:
-            while True:
-                # Keep the connection open for the professor
-                print("Professor WebSocket connected")
-                await websocket.receive_bytes()
-                 
-        except WebSocketDisconnect:
-            await manager.disconnect_prof()
-            print("Professor WebSocket disconnected")
-        return
-    else:
-        ## connecting student
-        await manager.connect(websocket)
+    # Connect student
+    await manager.connect(websocket)
+    
+    action = await receive_action(websocket)
+    # pd = AudioSegment.from_file("output.wav")
+    
+    # encoding	pcm_s16le
+    # format	s16
+    # number_of_channel	1 ch (mono)
+    # sample_rate	48,000 Hz
+    # file_size	478,124 bytes
+    # duration	5 s
+    p = pyaudio.PyAudio()
+    chunk = 1024
+    # print(pd.frame_rate)
+    # print(pd.sample_width)
+    # print(pd.channels)
+    stream = p.open(format =
+                        p.get_format_from_width(2),
+                        channels = 1,
+                        rate = 48000,
+                        output = True)
+
+
+    if action == "start":
+        await send_start(websocket)
+        # audio_buffer = io.BytesIO()  # Use BytesIO to collect audio data in memory
+        while True:
+            audio_bytes = await receive_audio(websocket)
+            if audio_bytes:
+                # audio_buffer.write(audio_bytes)  # Write each chunk to buffer
+                # AudioSegment
+                stream.write(audio_bytes)
+            else:
+                break
         
         
-        action = await receive_action(websocket)
-        
-        if action == "start":
-            await send_start(websocket) 
-            while True:
-                audio_bytes = await receive_audio(websocket)
-                print("received bytes, forwarding to prof")
-                if audio_bytes:
-                    await forward_audio(websocket, audio_bytes)
-                else:
-                    print("audio_bytes is None")
-                    break
-                
-            
-        elif action == "stop":
-            # send_deny()
-            print("received stop")
-        
-# @app.websocket("/ws/prof")
-# async def websocket_prof_endpoint(websocket: WebSocket):
-#     await manager.connect_prof(websocket)
-#     try:
-#         while True:
-#             # Keep the connection open for the professor
-#             await websocket.receive_text()  
-#     except WebSocketDisconnect:
-#         await manager.disconnect_prof()
-#         print("Professor WebSocket disconnected")
+    elif action == "stop":
+        print("received stop")
