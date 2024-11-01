@@ -25,14 +25,11 @@ class ConnectionManager:
             # await websocket.send_text("You are the current speaker")
             # self.active_connections.append(websocket)
         else:
-            sleep(1)
+            sleep(1) # Might be needed to wait for the client to receive the message as takes a while for socket to form
             print("Another student is currently speaking")
             await websocket.send_json({"action": "deny"})
             websocket.close()
             return False
-            
-        
-        
 
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
@@ -59,6 +56,8 @@ class ConnectionManager:
 
 async def receive_action(websocket: WebSocket):
     recv = await websocket.receive()
+    
+    ## Handles leftover in the socket and cleans up the remaining info in the socket
     while "text" not in recv:
         print("Trying again")
         recv = await websocket.receive()

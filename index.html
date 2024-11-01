@@ -37,8 +37,9 @@
             await new Promise(r => setTimeout(r, 200));
 
             ws.onmessage = function (event) {
-                // if (event.AudioContext)
+
                 console.log(event)
+                // handles the case where additional clients are trying to connect
                 if (event.data == "{\"action\":\"deny\"}") {
                     alert("Someone else is speaking. Wait for your turn.");
                 }
