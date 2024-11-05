@@ -1,12 +1,13 @@
 from typing import List
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 import pyaudio
 import json
 import asyncio
 
 app = FastAPI()
-
+app.mount('/static', StaticFiles(directory='static', html=True), name='static')
 class ConnectionManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []

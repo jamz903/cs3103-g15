@@ -1,0 +1,40 @@
+#recording-indicator {
+    display: none;
+    color: red;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+#connecting-indicator {
+    display: none;
+    color: blue;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+#stopping-indicator {
+    display: none;
+    color: orange;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+#deny-indicator {
+    display: none;
+    color: red;
+    font-weight: bold;
+    margin-top: 10px;
+}
+#mainbody {
+    text-align: center;
+    margin-top: 50px;
+}
+
+#talkBtn {
+    padding: 10px;
+    font-size: 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
