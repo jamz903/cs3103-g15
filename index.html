@@ -54,8 +54,11 @@
             console.log("Button clicked");
 
             isThrottled = true;
+            document.getElementById("talkBtn").disabled = isThrottled;
+
             setTimeout(() => {
                 isThrottled = false;
+                document.getElementById("talkBtn").disabled = isThrottled;
             }, 500);
         }
 
