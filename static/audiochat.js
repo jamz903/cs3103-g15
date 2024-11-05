@@ -175,8 +175,6 @@ function getCookie(cname) {
 }
 
 function setCookie(cname, cvalue, exdays) {
-    console.log("im in the function");
-    console.log(cvalue);
     let d = new Date();
     d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
     let expires = "expires=" + d.toUTCString();
@@ -185,24 +183,20 @@ function setCookie(cname, cvalue, exdays) {
 
 // Request username from user
 function requestUsername() {
-    console.log("checking for username cookie");
     // check if it exists as a cookie, existing user
     let username = getCookie("audiochat-username");
-    console.log("retrieved username: " + username);
     // if it doesn't exist, prompt user to enter
-    if (username != "") {
-        console.log("username cookie found");
+    if (username.trim() != "") {
         document.querySelector("#ws-username").textContent = username;
     } else {
-        console.log("no username cookie found");
         username = prompt("Please enter your username:");
-        if (username == null || username == "") {
+        if (username == null || username.trim() == "") {
             username = "Anonymous";
         }
-        setCookie("audiochat-username", username, 365); // Store for a year
+        setCookie("audiochat-username", username.trim(), 365); // Store for a year
         // update the username display
-        alert("Welcome, " + username + "!");
-        document.querySelector("#ws-username").textContent = username;
+        alert("Welcome, " + username.trim() + "!");
+        document.querySelector("#ws-username").textContent = username.trim();
     }
 }
 
@@ -210,13 +204,15 @@ function requestUsername() {
 function editUsername() {
     let username = getCookie("audiochat-username");
     username = prompt("Please enter your username:", username);
-    if (username == null || username == "") {
+    if (username.trim() == "") {
         username = "Anonymous";
+    } else if (username == null) { //no edits made to username
+        return;
     }
-    setCookie("audiochat-username", username, 365); // Store for a year
+    setCookie("audiochat-username", username.trim(), 365); // Store for a year
     // update the username display
-    alert("Username updated to " + username + "!");
-    document.querySelector("#ws-username").textContent = username;
+    alert("Username updated to " + username.trim() + "!");
+    document.querySelector("#ws-username").textContent = username.trim();
 }
 
 // Request username and audio permissions
