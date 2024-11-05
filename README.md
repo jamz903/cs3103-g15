@@ -2,7 +2,8 @@
 
 ## To run the code:
 
-Note: You will need to install Python 3.10. If not, you will face errors running our code.
+*Note: You will need to install Python 3.10. If not, you will face errors running our code.*
+
 `python3 -m venv venv`
 
 `source venv/bin/activate`
@@ -11,7 +12,7 @@ Note: You will need to install Python 3.10. If not, you will face errors running
 
 `fastapi dev server.py`
 
-If you are unable to run the fastapi command, it is most likely that you have an existing venv. Delete the folder and reinstall the packages.
+If you are unable to run the fastapi command, it is most likely that you have an existing venv. Delete the venv folder and reinstall the packages.
 
 
 Our code utilizes the pyaudio library. To use it, you have to install the portaudio library.
