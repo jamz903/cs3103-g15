@@ -32,9 +32,23 @@
         font-weight: bold;
         margin-top: 10px;
     }
+    #mainbody {
+        text-align: center;
+        margin-top: 50px;
+    }
+
+    #talkBtn {
+        padding: 10px;
+        font-size: 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
 </style>
 
 <body>
+    <div id="mainbody">
     <h1>WebSocket Audio Chat</h1>
     <h2>Your ID: <span id="ws-id"></span></h2>
     <button id="talkBtn" onmousedown="startRecording()" onmouseup="stopRecording()" onclick="handleClick()">Push to Talk</button>
@@ -44,6 +58,7 @@
     <h3 id="deny-indicator"></h3>
     <ul id='messages'>
     </ul>
+</div>
     <script>
         let isThrottled = false;
         function handleClick() {
