@@ -146,3 +146,83 @@ async function stopRecording() {
     ws.close();
     stoppingIndicator.style.display = "none";
 }
+
+// Request for audio permissions
+async function requestPermission() {
+    try {
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (error) {
+        console.error("Failed to get audio permission:", error);
+        alert("Please enable audio permissions to use this service.");
+    }
+}
+
+//functions taken from https://www.w3schools.com/js/js_cookies.asp
+function getCookie(cname) {
+    let name = cname + "=";
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let ca = decodedCookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
+function setCookie(cname, cvalue, exdays) {
+    console.log("im in the function");
+    console.log(cvalue);
+    let d = new Date();
+    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+    let expires = "expires=" + d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+// Request username from user
+function requestUsername() {
+    console.log("checking for username cookie");
+    // check if it exists as a cookie, existing user
+    let username = getCookie("audiochat-username");
+    console.log("retrieved username: " + username);
+    // if it doesn't exist, prompt user to enter
+    if (username != "") {
+        console.log("username cookie found");
+        document.querySelector("#ws-username").textContent = username;
+    } else {
+        console.log("no username cookie found");
+        username = prompt("Please enter your username:");
+        if (username == null || username == "") {
+            username = "Anonymous";
+        }
+        setCookie("audiochat-username", username, 365); // Store for a year
+        // update the username display
+        alert("Welcome, " + username + "!");
+        document.querySelector("#ws-username").textContent = username;
+    }
+}
+
+// Edit username
+function editUsername() {
+    let username = getCookie("audiochat-username");
+    username = prompt("Please enter your username:", username);
+    if (username == null || username == "") {
+        username = "Anonymous";
+    }
+    setCookie("audiochat-username", username, 365); // Store for a year
+    // update the username display
+    alert("Username updated to " + username + "!");
+    document.querySelector("#ws-username").textContent = username;
+}
+
+// Request username and audio permissions
+function requestOnLoad(){
+    requestPermission();
+    requestUsername();
+}
+
+document.addEventListener("DOMContentLoaded", requestOnLoad);

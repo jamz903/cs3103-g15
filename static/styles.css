@@ -38,3 +38,16 @@
     border: none;
     cursor: pointer;
 }
+
+#username-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 20px;
+}
+
+#username-container h2 {
+    max-width: 80vw;
+    margin: 0;
+    margin-right: 10px;
+}

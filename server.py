@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Cookie
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 import pyaudio
@@ -83,7 +83,9 @@ async def get_index():
 
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: str):
-    print(f"In WebSocket for client {client_id}")
+    # access stored cookie for username
+    username = websocket.cookies.get("audiochat-username")
+    print(f"In WebSocket for client {client_id}, Username: {username}")
     if not await manager.connect(websocket, client_id):
         print("Connection denied - another speaker active")
         return
@@ -100,7 +102,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
             print(f"Recording started for client {client_id}")
             
             while True:
-                print(f"Speaking: {client_id}")
+                print(f"Speaking: {client_id}, {username}")
                 try:
                     message = await websocket.receive()
                     

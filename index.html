@@ -10,6 +10,10 @@
     <div id="mainbody">
     <h1>WebSocket Audio Chat</h1>
     <h2>Your ID: <span id="ws-id"></span></h2>
+    <div id="username-container">
+        <h2>Your Username: <span id="ws-username"></span></h2>
+        <button id="edit-username-btn" onclick="editUsername()">Edit</button>
+    </div>
     <button id="talkBtn" onmousedown="startRecording()" onmouseup="stopRecording()" onclick="handleClick()">Push to Talk</button>
     <h3 id="recording-indicator">Recording started</h3>
     <h3 id="connecting-indicator">Connecting...</h3>
