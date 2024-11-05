@@ -37,7 +37,7 @@
 <body>
     <h1>WebSocket Audio Chat</h1>
     <h2>Your ID: <span id="ws-id"></span></h2>
-    <button id="talkBtn" onmousedown="startRecording()" onmouseup="stopRecording()">Push to Talk</button>
+    <button id="talkBtn" onmousedown="startRecording()" onmouseup="stopRecording()" onclick="handleClick()">Push to Talk</button>
     <h3 id="recording-indicator">Recording started</h3>
     <h3 id="connecting-indicator">Connecting...</h3>
     <h3 id="stopping-indicator">Stopping...</h3>
@@ -45,6 +45,20 @@
     <ul id='messages'>
     </ul>
     <script>
+        let isThrottled = false;
+        function handleClick() {
+            if (isThrottled) {
+                return;
+            }
+
+            console.log("Button clicked");
+
+            isThrottled = true;
+            setTimeout(() => {
+                isThrottled = false;
+            }, 500);
+        }
+
         var client_id = Math.floor(Math.random() * 100)
         document.querySelector("#ws-id").textContent = client_id;
         var ws;
