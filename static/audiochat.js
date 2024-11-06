@@ -79,7 +79,7 @@ async function startRecording() {
                 }, 1000);
             } else {
                 connectingIndicator.style.display = "none";
-                denyIndicator.textContent = `User ${response.speaker_id} is speaking. Wait for your turn.`;
+                denyIndicator.textContent = `User (${response.speaker_id}) ${response.speaker_username} is speaking. Wait for your turn.`;
                 denyIndicator.style.display = "block";
                 setTimeout(() => {
                     denyIndicator.style.display = "none";
