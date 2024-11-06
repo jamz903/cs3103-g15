@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Cookie
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 import pyaudio
