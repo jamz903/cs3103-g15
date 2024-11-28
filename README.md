@@ -1,3 +1,9 @@
+# Push-To-Talk WebSocket Application
+The aim of this push-to-talk (PTT) application is to enable a one-way, real time audio streaming from the student’s device to the lecturer’s PC utilising WebSockets from FastAPI. This serves as a proof of concept that it is possible to transmit raw audio data (that may require splitting up into chunks) via websockets and outputting it in a suitable form to be played on a loudspeaker on the lecturer side. At any given time, only one student can send his/her voice to the lecturer – the concurrency is managed by our application. 
+
+![alt text](CS3103Assignment4.png)
+
+
 # Usage
 
 ## To run the code:
@@ -27,11 +33,3 @@ for mac:
 `pip freeze > requirements.txt` everytime there is updates to the requirements
 
 `fastapi dev server.py`
-
-![alt text](CS3103Assignment4.png)
-
-## Current Progess
-- [x] Sending over textual data
-- [x] Established page with prof side, able to see data from student to prof page
-- [ ] Need to send over actual audio data
-- [ ] Need to get the students name at the start of loading the client
